@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/jdbc     
+        http://www.springframework.org/schema/jdbc/spring-jdbc-4.1.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:property-placeholder location="jdbc.properties" />
+
+	<!-- DB -->
+	<jdbc:embedded-database id="testDb" type="HSQL">
+		<jdbc:script location="classpath:db/schema.sql" />
+		<jdbc:script location="classpath:db/test-data.sql" />
+	</jdbc:embedded-database>
+
+	<!-- data source -->
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+	
+	<!-- Hibernate -->
+	<bean id="mySessionFactory"
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mappingResources">
+			<list>
+				<value>hibernate.hbm.xml</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<value>
+				hibernate.dialect=org.hibernate.dialect.HSQLDialect
+			</value>
+		</property>
+	</bean>
+
+    <bean id="transactionManager"
+            class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+        <property name="sessionFactory" ref="mySessionFactory"/>
+    </bean>
+
+    <tx:annotation-driven/>
+
+	<!-- application beans -->
+	<bean id="hibernateProductDao" class="com.sampa.simple_hibernate.dao.impl.HibernateProductDao">
+		<property name="sessionFactory" ref="mySessionFactory" />
+	</bean>
+</beans>
