@@ -1,5 +1,8 @@
 package com.sampa.rest.hateoas.rest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.http.HttpStatus;
@@ -21,10 +24,23 @@ public class RestProductController {
 	@Autowired
 	private ProductService service;
 
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<List<ProductResource>> getProducts() {
+
+		List<Product> products = service.getProducts();
+
+		List<ProductResource> productResources = new ArrayList<ProductResource>(products.size());
+		for (Product product : products) {
+			productResources.add(new ProductResource(product));
+		}
+
+		return new ResponseEntity<List<ProductResource>>(productResources, HttpStatus.OK);
+	}
+
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<ProductResource> getProduct(@PathVariable("id") String id) {
 		Product product = service.getProduct(id);
-
+		
 		ProductResource productResource = new ProductResource(product);
 		return new ResponseEntity<ProductResource>(productResource, HttpStatus.OK);
 	}
